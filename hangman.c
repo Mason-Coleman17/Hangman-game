@@ -55,24 +55,11 @@ if (!isValidWord) {
     printf("The word contains invalid characters! Please enter a word using only letters.\n");      
     goto Notvalid;
 }
-hint:
-	printf("Now, will player 1 please enter a one word hint: ");			/*category hint*/
-	scanf("%s", catHint);
 
-    int IsSingle = 1;
-    for(int i = 0; i < strlen(catHint);i++) {
-        if(isspace(catHint[i])) {
-            IsSingle = 0;
-            break;
-        }
-    }
+printf("Now, will player 1 please enter a one word hint: ");			/*category hint*/
+scanf("%s", catHint);
 
-    if(!IsSingle) {
-        printf("thats more than one word.\n");
-        goto hint;
-    }
-
-	system("cls");
+system("cls");
 
 char goodLuck[5][50] = {							/*There will be a random good luck saying chosen out of this predetermined five.*/
 "Best of luck to you!",
@@ -187,6 +174,7 @@ if (correct == wordLength) {
 
 return 0;
 }
+
 
 
 
