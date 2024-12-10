@@ -4,12 +4,12 @@
 #include <time.h>
 #include <stdlib.h>
 
-#define MAX_ATTTEMPTS 6													
+												
 
-void realTimeDisp (int numAtt) {
+void realTimeDisp (int numAttempts, int maxAttempts) {
 
-
-	switch(numAtt) {
+ int progress = numAttempts * (6.0 / maxAttempts); 
+	switch(progress) {
 		case 0: printf("  +---+\n  |   |\n  |\n  |\n  |\n  |\n=========\n"); break;
 		case 1: printf("  +---+\n  |   |\n  |   O --come on you've got this\n  |\n  |\n  |\n=========\n"); break;			/*live model code which will update each time the player guesses incorrectly*/
 		case 2: printf("  +---+\n  |   |\n  |   O\n  |   |\n  |\n  |\n=========\n"); break;		
@@ -17,20 +17,37 @@ void realTimeDisp (int numAtt) {
 		case 4: printf("  +---+\n  |   |\n  |   O\n  |  /|\\\n  |\n  |\n=========\n"); break;
 		case 5: printf("  +---+\n  |   |\n  |   O\n  |  /|\\\n  |  /\n  |\n=========\n"); break;
 		case 6: printf("  +---+\n  |   |\n  |   O --NOOOOOOOOOO!\n  |  /|\\\n  |  / \\\n  |\n=========\n"); break;
-}
+    }
 }
 
 int main()  {
 int wordLength = 0;
 char catHint[30];
+int numAttempts, maxAttempts;
 printf("                    ***WELCOME TO HANGMAN***\n");
 
-start:																		/*program will loop back here if word entered is longer than max word length*/
-	printf(" before we begin, please enter the max word length: ");
-	scanf("%d", &wordLength);
+start:																		/*program will loop back here if word entered is longer than max word length, or if anyting that isnt a positive number is entered.*/
+    printf("Before we begin, please enter the max word length: ");
 
-char word[wordLength];
+    if (scanf("%d", &wordLength) != 1 || wordLength <= 0) {
+        printf("Invalid input. Please enter a positive number.\n");
+        while (getchar() != '\n'); 
+        goto start;
+    }
 
+    printf("Please enter if you would like six, twelve, or eighteen attempts: ");
+    scanf("%d", &maxAttempts);
+
+    if (maxAttempts != 6 && maxAttempts != 12 && maxAttempts != 18) {
+        printf("You selected an invalid number. Please start over.\n");
+        goto start;
+    }
+
+char *word = malloc((wordLength + 1) * sizeof(char));
+if (!word) {
+        printf("Memory allocation failed. Exiting program.\n");
+        return 1;
+}
 Notvalid:
 	printf("Would player one please enter a word that is %d letters or less: ", wordLength);
 	scanf("%s", word);
@@ -44,24 +61,24 @@ for(int i = 0; i <strlen(word);i++) {                                           
     word[i] = tolower(word[i]);
 }
 int isValidWord = 1;
-for (int i = 0; i < strlen(word); i++) {                    
+for (int i = 0; i < strlen(word); i++) {                                                /*Code to make sure input is a valid word with valid characters*/
     if (!isalpha(word[i])) {
         isValidWord = 0;
         break;
     }
 }
-// If the word contains non-alphabetic characters, ask the player to re-enter
+                                                                                             
 if (!isValidWord) {
     printf("The word contains invalid characters! Please enter a word using only letters.\n");      
     goto Notvalid;
 }
 
-printf("Now, will player 1 please enter a one word hint: ");			/*category hint*/
-scanf("%s", catHint);
+	printf("Now, will player 1 please enter a one word hint: ");			            /*category hint*/
+	scanf("%s", catHint);
 
-system("cls");
+	printf("\e[1;1H\e[2J");
 
-char goodLuck[5][50] = {							/*There will be a random good luck saying chosen out of this predetermined five.*/
+char goodLuck[5][50] = {							                                    /*There will be a random good luck saying chosen out of this predetermined five.*/
 "Best of luck to you!",
 "hmmm, interesting word....Good luck!",
 "Ooh, i wouldnt've thought of that!",
@@ -84,7 +101,7 @@ printf("please enter yes if ready to begin: ");
 scanf("%s", ready);
 
 if(strcmp(ready, "yes") == 0) {
-    system("cls");
+    printf("\e[1;1H\e[2J");
 }
 else { 
     printf("huh? why did you type something else? please try again and put yes when you're ready to play\n");
@@ -95,7 +112,7 @@ if(strlen(word) != wordLength) {										/*makes the length of wordLength equal
 	wordLength = strlen(word);
 }
 
-char letterGuess;														/*This point downward is mainly just stuff I was testing, feel free to ignore it and write your own code*/
+char letterGuess;														/*This is when the game begins*/
 char result;
 int incorrect = 0;
 int correct = 0;
@@ -104,8 +121,8 @@ int correct = 0;
 char guessed[wordLength]; 
 memset(guessed, 0, sizeof(guessed)); 
 
-while (incorrect < MAX_ATTTEMPTS && correct < wordLength) {
-    realTimeDisp(incorrect); 		/*Live model */
+while (incorrect < maxAttempts && correct < wordLength) {
+    realTimeDisp(incorrect, maxAttempts); 		/*Live model*/
 
 
     printf("Current word: ");				/*this is keeping progress for the game, showing blank spots and guessed letters*/
@@ -148,7 +165,7 @@ while (incorrect < MAX_ATTTEMPTS && correct < wordLength) {
     int found = 0;
     for (int i = 0; i < wordLength; i++) {
         if (word[i] == letterGuess && !guessed[i]) {
-            guessed[i] = 1; // Mark the letter as guessed//
+            guessed[i] = 1;                             // Mark the letter as guessed//
             correct++;
             found = 1;
         }
@@ -163,15 +180,16 @@ while (incorrect < MAX_ATTTEMPTS && correct < wordLength) {
 }
 
 
-realTimeDisp(incorrect);        /*this is the final hangman state*/
+realTimeDisp(incorrect, maxAttempts);        /*this is the final hangman state*/
 
 
 if (correct == wordLength) {
-    printf("Congratulations! You guessed the word: %s\n", word);    /*win or lose*/
+    printf("Congratulations!\nYou guessed the word: %s\n", word);    /*win or lose*/
 } else {
     printf("Game over! The word was: %s\n", word);
 }
 
+free(word);
 return 0;
 }
 
